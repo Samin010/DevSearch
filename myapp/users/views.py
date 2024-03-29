@@ -5,6 +5,7 @@ from django.contrib import messages
 # Create your views here.
 from django.contrib.auth.models import User
 from .forms import CustomUserCreationForm
+from django.contrib.auth.decorators import login_required
 
 def loginUser(request):
     page='login'
@@ -68,3 +69,11 @@ def userProfile(request,pk):
   otherSkills=profile.skill_set.filter(description="")
   context={'profile':profile,'topSkills':topSkills,'otherSkills':otherSkills}
   return render(request,'users/user-profile.html',context)
+
+@login_required(login_url='login')
+def userAccount(request):
+  profile=request.user.profile
+  projects=profile.skill_set.all()
+  skills=profile.skill_set.all()
+  context={'profile':profile,'skills':skills,'projects':projects}
+  return render(request,'users/account.html',context)
