@@ -4,7 +4,7 @@ from .models import Profile
 from django.contrib import messages
 # Create your views here.
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm,ProfileForm
+from .forms import CustomUserCreationForm,ProfileForm,SkillForm
 from django.contrib.auth.decorators import login_required
 
 def loginUser(request):
@@ -90,3 +90,49 @@ def editAccount(request):
       return redirect('account')
   context={'form':form}
   return render(request,'users/profile_form.html',context)
+
+@login_required(login_url='login')
+def createSkill(request):
+   profile=request.user.profile
+   form=SkillForm()
+   
+   if request.method=='POST':
+     form=SkillForm(request.POST)
+     if form.is_valid():
+       skill=form.save(commit=False)
+       skill.owner=profile
+       skill.save()
+       messages.success(request,"Skill was added successfully!")  
+       return redirect('account')
+   context={'form':form}
+   return render(request,'users/skill_form.html',context)
+ 
+ 
+ 
+@login_required(login_url='login')
+def updateSkill(request,key):
+   profile=request.user.profile
+   skill=profile.skill_set.get(id=key)
+   form=SkillForm(instance=skill)
+   
+   if request.method=='POST':
+     form=SkillForm(request.POST,instance=skill)
+     if form.is_valid():
+       form.save()
+       messages.success(request,"Skill was updated successfully!")  
+       return redirect('account')
+   context={'form':form}
+   return render(request,'users/skill_form.html',context)
+ 
+ 
+
+def deleteSkill(request,key):
+   profile=request.user.profile
+   skill=profile.skill_set.get(id=key)
+   if request.method=='POST':
+     skill.delete()
+     messages.success(request,"Skill was deleted successfully!")
+     return redirect('account')
+   context={'object':skill}
+   return render(request,'delete_template.html',context) 
+ 
